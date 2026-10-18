@@ -507,6 +507,18 @@ legend { font-size: 12px; color: var(--muted); letter-spacing: .06em; margin-bot
 .empty-state h2 { font-family: var(--font-display); margin: 0; font-size: 18px; }
 .empty-state p { margin: 0; color: var(--muted); }
 
+/* 子・孫…と自由に増やせる階層 */
+.nrow { flex: none; display: flex; align-items: stretch; }
+.nrow > .node { border-radius: 10px 0 0 10px; }
+.leaf > .nrow > .node { width: min(54vw, 210px); font-size: 13.5px; }
+.leaf > .nrow > .node.filled { background: var(--k); color: var(--on-pastel); border-color: transparent; }
+.leaf > .nrow > .node.tint { border-color: color-mix(in srgb, var(--k) 55%, var(--line)); }
+.deep > .node, .deep > .nrow > .node { font-size: 13px; padding: 5px 10px; width: min(50vw, 200px); }
+.deep > .node:not(.filled), .deep > .nrow > .node:not(.filled) { background: color-mix(in srgb, var(--k) 8%, var(--cell)); }
+.cell .subs { position: absolute; bottom: 5%; left: 6%; font-size: max(9px, 11cqi); font-weight: 700; opacity: .7; }
+.map-hint { color: var(--muted); font-size: 12.5px; margin: -6px 0 12px; }
+.struct { padding-top: 10px; border-top: 1px solid var(--line); }
+
 /* スマホ幅では縦に並ぶアウトライン型のマップにする */
 @media (max-width: 640px) {
   .tree li { display: block; padding-left: 0; }
@@ -520,10 +532,14 @@ legend { font-size: 12px; color: var(--muted); letter-spacing: .06em; margin-bot
   .root > .node { width: auto; max-width: 100%; }
   .bnode { width: min(100%, 260px); }
   .leaf > .node { width: auto; max-width: 100%; min-width: 120px; }
+  .leaf > .nrow { max-width: 100%; }
+  .leaf > .nrow > .node, .deep > .nrow > .node { width: auto; min-width: 120px; max-width: calc(100% - 30px); }
+  .deep > .node { width: auto; min-width: 100px; }
 }
 @media (min-width: 700px) {
   .scrim { align-items: center; }
-  .leaf > .node { width: 220px; }
+  .leaf > .node, .leaf > .nrow > .node { width: 220px; }
+  .deep > .node, .deep > .nrow > .node { width: 200px; }
   .bnode { width: 150px; }
   .root > .node { width: 130px; font-size: 18px; }
 }
@@ -576,6 +592,7 @@ legend { font-size: 12px; color: var(--muted); letter-spacing: .06em; margin-bot
       <button id="openAll" class="btn small" type="button">すべて開く</button>
       <button id="closeAll" class="btn small" type="button">すべて閉じる</button>
     </div>
+    <p class="map-hint">項目をタップして「＋ 子を追加」を押すと、行動の先にも子・孫…と好きなだけ増やせます。</p>
     <div class="map"><ul id="tree" class="tree"></ul></div>
   </section>
 </main>
@@ -611,11 +628,19 @@ legend { font-size: 12px; color: var(--muted); letter-spacing: .06em; margin-bot
       <div id="edColors" class="swatches"></div>
     </fieldset>
     <label class="toggle"><input id="edDone" type="checkbox"> 達成した</label>
+    <div class="sheet-actions struct">
+      <button id="edAddChild" class="btn small" type="button">＋ 子を追加</button>
+      <button id="edAddSib" class="btn small" type="button">＋ 同じ階層に追加</button>
+      <button id="edUp" class="btn small" type="button" aria-label="ひとつ上へ移動">↑ 上へ</button>
+      <button id="edDown" class="btn small" type="button" aria-label="ひとつ下へ移動">↓ 下へ</button>
+      <button id="edOpen" class="btn small" type="button" hidden>この3×3を開く</button>
+    </div>
+    <p id="edMsg" class="msg err" role="status"></p>
     <div class="sheet-actions">
       <button id="edClear" class="btn danger" type="button">消去</button>
-      <button id="edOpen" class="btn" type="button" hidden>この3×3を開く</button>
       <span class="sp"></span>
       <button id="edCancel" class="btn" type="button">キャンセル</button>
+      <button id="edNext" class="btn" type="button" hidden>保存して続けて追加</button>
       <button id="edSave" class="btn primary" type="button">保存</button>
     </div>
   </section>
@@ -698,7 +723,28 @@ legend { font-size: 12px; color: var(--muted); letter-spacing: .06em; margin-bot
   function normCell(c) {
     c = c && typeof c === 'object' ? c : {};
     var t = typeof c.t === 'string' ? c.t.replace(/\r/g, '') : '';
-    return { t: Array.from(t).slice(0, MAXLEN).join(''), c: COLOR_KEYS.indexOf(c.c) >= 0 ? c.c : '', d: !!c.d, u: +c.u || 0 };
+    var out = { t: Array.from(t).slice(0, MAXLEN).join(''), c: COLOR_KEYS.indexOf(c.c) >= 0 ? c.c : '', d: !!c.d, u: +c.u || 0 };
+    var k = normKids(c.k, 1);
+    if (k.length) out.k = k;
+    return out;
+  }
+  // 行動マスの下に自由に増やせる子・孫…（マインドマップ用）
+  var SUBLEN = 80;
+  function normKids(arr, depth) {
+    if (!Array.isArray(arr) || depth > 30) return [];
+    return arr.filter(function (n) { return n && typeof n === 'object'; }).slice(0, 300).map(function (n) {
+      var t = typeof n.t === 'string' ? n.t.replace(/\r/g, '') : '';
+      var o = { id: typeof n.id === 'string' && n.id ? n.id : uid(), t: Array.from(t).slice(0, SUBLEN).join(''), c: COLOR_KEYS.indexOf(n.c) >= 0 ? n.c : '', d: !!n.d };
+      var k = normKids(n.k, depth + 1);
+      if (k.length) o.k = k;
+      return o;
+    });
+  }
+  function countDesc(n) { var s = 0; (n.k || []).forEach(function (x) { s += 1 + countDesc(x); }); return s; }
+  function nodeAt(ch, b, i, path) {
+    var n = ch.blocks[b][i];
+    for (var p = 0; p < path.length; p++) { n = (n.k || [])[path[p]]; if (!n) return null; }
+    return n;
   }
   function normalize(raw, id) {
     if (!raw || !Array.isArray(raw.blocks)) return null;
@@ -891,7 +937,7 @@ legend { font-size: 12px; color: var(--muted); letter-spacing: .06em; margin-bot
       var snap = u.snap;
       for (var b = 0; b < 9; b++) for (var i = 0; i < 9; i++) {
         var s = snap.blocks[b][i], c = curr ? curr.blocks[b][i] : null;
-        if (!c || s.t !== c.t || s.c !== c.c || s.d !== c.d) s.u = now;
+        if (!c || s.t !== c.t || s.c !== c.c || s.d !== c.d || JSON.stringify(s.k || []) !== JSON.stringify(c.k || [])) s.u = now;
       }
       snap.updated = now;
       charts[u.id] = snap;
@@ -957,7 +1003,15 @@ legend { font-size: 12px; color: var(--muted); letter-spacing: .06em; margin-bot
       p.setAttribute('aria-hidden', 'true');
       el.appendChild(p);
     }
-    el.setAttribute('aria-label', (cell.t || '空きマス') + (cell.d ? '（達成）' : ''));
+    var nd = countDesc(cell);
+    if (nd) {
+      var sb = document.createElement('span');
+      sb.className = 'subs';
+      sb.textContent = '▸' + nd;
+      sb.setAttribute('aria-hidden', 'true');
+      el.appendChild(sb);
+    }
+    el.setAttribute('aria-label', (cell.t || '空きマス') + (cell.d ? '（達成）' : '') + (nd ? '（下位 ' + nd + ' 件）' : ''));
     return el;
   }
 
@@ -1065,7 +1119,7 @@ legend { font-size: 12px; color: var(--muted); letter-spacing: .06em; margin-bot
     }
   }
 
-  function nodeBtn(cell, b, i, cls) {
+  function nodeBtn(cell, b, i, cls, path) {
     var el = document.createElement('button');
     el.type = 'button';
     el.className = 'node';
@@ -1074,8 +1128,38 @@ legend { font-size: 12px; color: var(--muted); letter-spacing: .06em; margin-bot
     if (cell.d) el.classList.add('done');
     if (cell.t) el.textContent = cell.t;
     else { el.classList.add('empty'); el.textContent = '＋ 空き'; }
-    el.addEventListener('click', function () { openEditor(b, i); });
+    el.addEventListener('click', function () { openEditor(b, i, path || []); });
     return el;
+  }
+
+  // 行動マスとその下の子・孫…を再帰的に描く
+  function buildSub(li, node, b, i, path, cls, key) {
+    var btn = nodeBtn(node, b, i, cls, path);
+    var kids = node.k || [];
+    if (!kids.length) { li.appendChild(btn); return; }
+    var row = document.createElement('div');
+    row.className = 'nrow';
+    row.appendChild(btn);
+    var isC = !!collapsed[key];
+    var fold = document.createElement('button');
+    fold.type = 'button';
+    fold.className = 'fold';
+    fold.setAttribute('aria-expanded', String(!isC));
+    fold.setAttribute('aria-label', (node.t || '項目') + 'を' + (isC ? '開く' : '閉じる'));
+    fold.innerHTML = (isC ? '▸' : '▾') + '<span class="ct"></span>';
+    fold.querySelector('.ct').textContent = countDesc(node);
+    fold.addEventListener('click', function () { collapsed[key] = !collapsed[key]; render(); });
+    row.appendChild(fold);
+    li.appendChild(row);
+    if (isC) return;
+    var ul = document.createElement('ul');
+    kids.forEach(function (kid, idx) {
+      var l = document.createElement('li');
+      l.className = 'leaf deep';
+      buildSub(l, kid, b, i, path.concat(idx), kid.c ? '' : 'tint', kid.id);
+      ul.appendChild(l);
+    });
+    li.appendChild(ul);
   }
 
   function renderMap(ch) {
@@ -1089,7 +1173,7 @@ legend { font-size: 12px; color: var(--muted); letter-spacing: .06em; margin-bot
     ORDER.forEach(function (b) {
       var th = ch.blocks[4][b];
       var items = ORDER.map(function (i) { return [i, ch.blocks[b][i]]; });
-      var filled = items.filter(function (x) { return x[1].t; });
+      var filled = items.filter(function (x) { return x[1].t || (x[1].k && x[1].k.length); });
       if (!showEmpty && !th.t && !filled.length) return;
       var li = document.createElement('li');
       li.className = 'branch';
@@ -1115,7 +1199,7 @@ legend { font-size: 12px; color: var(--muted); letter-spacing: .06em; margin-bot
           var l = document.createElement('li');
           l.className = 'leaf';
           l.style.setProperty('--k', 'var(--p-' + k + ')');
-          l.appendChild(nodeBtn(x[1], b, x[0], x[1].c ? '' : 'tint'));
+          buildSub(l, x[1], b, x[0], [], x[1].c ? '' : 'tint', 'c' + b + '-' + x[0]);
           ul.appendChild(l);
         });
         if (ul.children.length) li.appendChild(ul);
@@ -1146,17 +1230,38 @@ legend { font-size: 12px; color: var(--muted); letter-spacing: .06em; margin-bot
     var th = ch.blocks[4][b].t.replace(/\n/g, ' ') || 'テーマ未設定';
     return th + ' の行動 ' + (ORDER.indexOf(i) + 1) + ' / 8';
   }
-  function openEditor(b, i) {
+  function label(n) { return (n && n.t ? n.t : '（空き）').replace(/\n/g, ' '); }
+  function trailText(ch, b, i, path) {
+    var names = [label(ch.blocks[4][b]), label(ch.blocks[b][i])];
+    for (var p = 1; p <= path.length; p++) names.push(label(nodeAt(ch, b, i, path.slice(0, p))));
+    return names.join(' › ');
+  }
+  // mode: 'edit'（既存を直す）/ 'new'（path の項目の下に新しく追加）
+  function openEditor(b, i, path, mode) {
     var ch = cur();
     if (!ch) return;
-    ed = { b: b, i: i, id: curId };
-    var cell = ch.blocks[b][i];
-    $('#edTitle').textContent = (b === 4 && i === 4) ? '目標を編集' : (b === 4 ? 'テーマを編集' : 'マスを編集');
-    $('#edWhere').textContent = whereText(b, i);
-    $('#edText').value = cell.t;
-    $('#edDone').checked = cell.d;
-    edColor = cell.c;
-    $('#edOpen').hidden = !(b === 4 && i !== 4);
+    path = path || [];
+    mode = mode || 'edit';
+    var isNew = mode === 'new';
+    var node = isNew ? { t: '', c: '', d: false } : nodeAt(ch, b, i, path);
+    if (!node) return;
+    var deep = isNew || path.length > 0;
+    ed = { b: b, i: i, path: path, mode: mode, id: curId, limit: deep ? SUBLEN : MAXLEN };
+    $('#edText').maxLength = ed.limit;
+    $('#edTitle').textContent = isNew ? '項目を追加' : deep ? '項目を編集' : (b === 4 && i === 4) ? '目標を編集' : (b === 4 ? 'テーマを編集' : 'マスを編集');
+    $('#edWhere').textContent = isNew ? trailText(ch, b, i, path) + ' の下' : deep ? trailText(ch, b, i, path.slice(0, -1)) + ' の下' : whereText(b, i);
+    $('#edText').value = node.t;
+    $('#edDone').checked = node.d;
+    edColor = node.c;
+    var isTheme = b === 4 && i !== 4, isRoot = b === 4 && i === 4;
+    $('#edOpen').hidden = !isTheme;
+    $('#edAddChild').hidden = isNew;
+    $('#edAddChild').textContent = isRoot ? '＋ テーマを追加' : isTheme ? '＋ 行動を追加' : '＋ 子を追加';
+    $('#edAddSib').hidden = isNew || isRoot;
+    $('#edUp').hidden = $('#edDown').hidden = isNew || path.length === 0;
+    $('#edNext').hidden = !isNew;
+    $('#edClear').hidden = isNew;
+    $('#edMsg').textContent = '';
     disarmClear();
     paintColors();
     updateCount();
@@ -1179,29 +1284,90 @@ legend { font-size: 12px; color: var(--muted); letter-spacing: .06em; margin-bot
     });
   }
   function updateCount() {
+    var lim = ed ? ed.limit : MAXLEN;
     var n = Array.from($('#edText').value).length;
     var el = $('#edCount');
-    el.textContent = n + ' / ' + MAXLEN;
-    el.classList.toggle('over', n >= MAXLEN);
+    el.textContent = n + ' / ' + lim;
+    el.classList.toggle('over', n >= lim);
   }
-  function saveEditor() {
+  function readFields() {
+    return {
+      t: Array.from($('#edText').value.replace(/\r/g, '').replace(/^\s+|\s+$/g, '')).slice(0, ed.limit).join(''),
+      d: $('#edDone').checked,
+      c: edColor
+    };
+  }
+  function saveEditor(next) {
     if (!ed) return;
-    var e = ed;
-    var t = Array.from($('#edText').value.replace(/\r/g, '').replace(/^\s+|\s+$/g, '')).slice(0, MAXLEN).join('');
-    var d = $('#edDone').checked;
-    var c = edColor;
+    var e = ed, f = readFields();
     closeEditor();
     var ch = charts[e.id];
     if (!ch) return;
-    var old = ch.blocks[e.b][e.i];
-    if (old.t === t && old.d === d && old.c === c) return;
-    commit(e.id, function (ch) { ch.blocks[e.b][e.i] = { t: t, c: c, d: d, u: Date.now() }; });
+    if (e.mode === 'new') {
+      if (!f.t) return;
+      var parent = nodeAt(ch, e.b, e.i, e.path);
+      if (!parent) return;
+      collapsed[e.path.length ? parent.id : 'c' + e.b + '-' + e.i] = false;
+      commit(e.id, function (ch) {
+        var p = nodeAt(ch, e.b, e.i, e.path);
+        p.k = p.k || [];
+        p.k.push({ id: uid(), t: f.t, c: f.c, d: f.d });
+        ch.blocks[e.b][e.i].u = Date.now();
+      });
+      if (next === true) openEditor(e.b, e.i, e.path, 'new');
+      return;
+    }
+    var old = nodeAt(ch, e.b, e.i, e.path);
+    if (!old || (old.t === f.t && old.d === f.d && old.c === f.c)) return;
+    commit(e.id, function (ch) {
+      var n = nodeAt(ch, e.b, e.i, e.path);
+      n.t = f.t; n.c = f.c; n.d = f.d;
+      ch.blocks[e.b][e.i].u = Date.now();
+    });
+  }
+  function emptySlot(ch, blk) {
+    for (var n = 0; n < 8; n++) {
+      var j = ORDER[n], c = ch.blocks[blk][j];
+      if (!c.t && !(c.k && c.k.length)) return j;
+    }
+    return -1;
+  }
+  // 目標・テーマの下はマンダラの8マスを順に埋め、行動より下は自由に増やす
+  function addUnder(e, sibling) {
+    var ch = cur();
+    if (sibling && e.path.length) { saveEditor(); openEditor(e.b, e.i, e.path.slice(0, -1), 'new'); return; }
+    var target = null; // マンダラのマスを埋める先のブロック
+    if (!sibling) {
+      if (e.b === 4 && e.i === 4) target = 4;
+      else if (e.b === 4) target = e.i;
+    } else {
+      target = e.b === 4 ? 4 : e.b;
+    }
+    if (target === null) { saveEditor(); openEditor(e.b, e.i, e.path, 'new'); return; }
+    var s = emptySlot(ch, target);
+    if (s < 0) { $('#edMsg').textContent = (target === 4 ? 'テーマ' : '行動') + 'の8マスはすべて埋まっています。行動の下なら、子・孫…と自由に増やせます。'; return; }
+    saveEditor();
+    openEditor(target, s);
+  }
+  function moveNode(dir) {
+    var e = ed;
+    saveEditor();
+    var ch = charts[e.id];
+    var parent = nodeAt(ch, e.b, e.i, e.path.slice(0, -1));
+    var idx = e.path[e.path.length - 1], j = idx + dir;
+    if (!parent || !parent.k || j < 0 || j >= parent.k.length) { openEditor(e.b, e.i, e.path); return; }
+    commit(e.id, function (ch) {
+      var p = nodeAt(ch, e.b, e.i, e.path.slice(0, -1));
+      var t = p.k[idx]; p.k[idx] = p.k[j]; p.k[j] = t;
+      ch.blocks[e.b][e.i].u = Date.now();
+    });
+    openEditor(e.b, e.i, e.path.slice(0, -1).concat(j));
   }
   function disarmClear() {
     clearArmed = false;
     clearTimeout(clearTimer);
     var b = $('#edClear');
-    b.textContent = '消去';
+    b.textContent = ed && ed.path && ed.path.length ? '削除' : '消去';
     b.classList.remove('armed');
   }
 
@@ -1284,14 +1450,20 @@ legend { font-size: 12px; color: var(--muted); letter-spacing: .06em; margin-bot
   function outline(ch) {
     var out = [];
     var mark = function (c) { return c.d ? ' ✓' : ''; };
+    var subOutline = function (arr, lv) {
+      (arr || []).forEach(function (n) {
+        out.push(new Array(lv + 2).join('  ') + '- ' + n.t.replace(/\n/g, ' ') + mark(n));
+        subOutline(n.k, lv + 1);
+      });
+    };
     out.push('◎ ' + ch.blocks[4][4].t.replace(/\n/g, ' ') + mark(ch.blocks[4][4]));
     ORDER.forEach(function (b, n) {
       var th = ch.blocks[4][b];
-      var items = ORDER.filter(function (i) { return ch.blocks[b][i].t; });
+      var items = ORDER.filter(function (i) { return ch.blocks[b][i].t || (ch.blocks[b][i].k && ch.blocks[b][i].k.length); });
       if (!th.t && !items.length) return;
       out.push('');
       out.push((n + 1) + '. ' + (th.t.replace(/\n/g, ' ') || '（テーマ未設定）') + mark(th));
-      items.forEach(function (i) { out.push('  ・' + ch.blocks[b][i].t.replace(/\n/g, ' ') + mark(ch.blocks[b][i])); });
+      items.forEach(function (i) { out.push('  ・' + ch.blocks[b][i].t.replace(/\n/g, ' ') + mark(ch.blocks[b][i])); subOutline(ch.blocks[b][i].k, 2); });
     });
     return out.join('\n');
   }
@@ -1405,24 +1577,40 @@ legend { font-size: 12px; color: var(--muted); letter-spacing: .06em; margin-bot
     } else fallback();
   });
 
-  $('#edSave').addEventListener('click', saveEditor);
+  $('#edSave').addEventListener('click', function () { saveEditor(); });
+  $('#edNext').addEventListener('click', function () { saveEditor(true); });
+  $('#edAddChild').addEventListener('click', function () { addUnder(ed, false); });
+  $('#edAddSib').addEventListener('click', function () { addUnder(ed, true); });
+  $('#edUp').addEventListener('click', function () { moveNode(-1); });
+  $('#edDown').addEventListener('click', function () { moveNode(1); });
   $('#edCancel').addEventListener('click', closeEditor);
   $('#edWrap').addEventListener('click', function (e) { if (e.target === $('#edWrap')) closeEditor(); });
   $('#edText').addEventListener('input', updateCount);
-  $('#edText').addEventListener('keydown', function (e) { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); saveEditor(); } });
+  $('#edText').addEventListener('keydown', function (e) { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); saveEditor(!!ed && ed.mode === 'new'); } });
   $('#edOpen').addEventListener('click', function () { var i = ed.i; saveEditor(); goBlock(i); });
   $('#edClear').addEventListener('click', function () {
     if (!clearArmed) {
       clearArmed = true;
       var b = $('#edClear');
-      b.textContent = 'もう一度で消去';
+      var tgt = nodeAt(cur(), ed.b, ed.i, ed.path);
+      var verb = ed.path.length ? '削除' : '消去';
+      b.textContent = (tgt && tgt.k && tgt.k.length) ? 'もう一度で下の階層ごと' + verb : 'もう一度で' + verb;
       b.classList.add('armed');
       clearTimer = setTimeout(disarmClear, 4000);
       return;
     }
     var e = ed;
     closeEditor();
-    commit(e.id, function (ch) { ch.blocks[e.b][e.i] = { t: '', c: '', d: false, u: Date.now() }; });
+    if (e.path.length) {
+      commit(e.id, function (ch) {
+        var p = nodeAt(ch, e.b, e.i, e.path.slice(0, -1));
+        p.k.splice(e.path[e.path.length - 1], 1);
+        if (!p.k.length) delete p.k;
+        ch.blocks[e.b][e.i].u = Date.now();
+      });
+    } else {
+      commit(e.id, function (ch) { ch.blocks[e.b][e.i] = { t: '', c: '', d: false, u: Date.now() }; });
+    }
   });
 
   $('#stClose').addEventListener('click', closeSettings);
