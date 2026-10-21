@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>マンダラチャート帳</title>
-<meta name="description" content="スマホとPCで同期するマンダラチャート。3×3・9×9・マインドマップ表示。">
+<meta name="description" content="スマホとPCで同期するマンダラチャート。3×3・9×9表示。">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -18,7 +18,7 @@
 <body>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Zen+Maru+Gothic:wght@500;700&display=swap">
 <style>
-/* Layout: 上部に表示中チャート名、中央にマス目（3×3 / 9×9）かマインドマップ、下部固定のタブで表示を切り替える。マスをタップすると上から編集パネルが開く（スマホのキーボードに隠れないように上寄せ） */
+/* Layout: 上部に表示中チャート名、中央にマス目（3×3 / 9×9）、下部固定のタブで表示を切り替える。マスをタップすると上から編集パネルが開く（スマホのキーボードに隠れないように上寄せ） */
 :root {
   --bg: #eef1f5;
   --surface: #ffffff;
@@ -267,89 +267,6 @@ main { max-width: 760px; margin: 0 auto; }
 .g9 .cell { border-radius: 4px; border-width: 1px; }
 .g9 .cell.empty .plus { display: none; }
 
-/* マインドマップ */
-.map-bar { display: flex; gap: 8px; flex-wrap: wrap; margin: 4px 0 14px; }
-.map { overflow-x: auto; padding-bottom: 8px; }
-.tree, .tree ul { list-style: none; margin: 0; padding: 0; }
-.tree li { position: relative; display: flex; align-items: center; padding-left: 14px; }
-.tree > li { padding-left: 0; }
-.tree ul {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding-left: 14px;
-  gap: 4px;
-  min-width: 0;
-}
-.tree ul::before { content: ""; position: absolute; left: 0; top: 50%; width: 14px; border-top: 2px solid var(--line); }
-.tree ul > li::before { content: ""; position: absolute; left: 0; top: 50%; width: 14px; border-top: 2px solid var(--line); }
-.tree ul > li::after { content: ""; position: absolute; left: 0; top: -2px; bottom: -2px; border-left: 2px solid var(--line); }
-.tree ul > li:first-child::after { top: 50%; }
-.tree ul > li:last-child::after { bottom: 50%; }
-.tree ul > li:only-child::after { display: none; }
-.node {
-  flex: none;
-  border: 1.5px solid var(--line);
-  background: var(--cell);
-  color: var(--ink);
-  border-radius: 10px;
-  padding: 7px 11px;
-  text-align: left;
-  cursor: pointer;
-  white-space: pre-line;
-  overflow-wrap: anywhere;
-  line-height: 1.4;
-  position: relative;
-}
-.root > .node {
-  width: 96px;
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 16px;
-  padding: 12px;
-  background: var(--ink);
-  color: var(--bg);
-  border-color: var(--ink);
-}
-.root > .node.filled { background: var(--k); color: var(--on-pastel); border-color: transparent; }
-.bnode { flex: none; display: flex; align-items: stretch; width: 128px; }
-.bnode .node {
-  flex: 1;
-  min-width: 0;
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 15px;
-  border-radius: 10px 0 0 10px;
-  background: color-mix(in srgb, var(--k) 25%, var(--cell));
-  border-color: color-mix(in srgb, var(--k) 60%, var(--line));
-}
-.bnode .node.filled { background: var(--k); color: var(--on-pastel); }
-.fold {
-  flex: none;
-  width: 30px;
-  border: 1.5px solid color-mix(in srgb, var(--k) 60%, var(--line));
-  border-left: none;
-  border-radius: 0 10px 10px 0;
-  background: var(--surface);
-  cursor: pointer;
-  font-size: 12px;
-  color: var(--muted);
-}
-.fold .ct { display: block; font-size: 10px; font-variant-numeric: tabular-nums; }
-.leaf > .node { width: min(54vw, 210px); font-size: 13.5px; }
-.leaf > .node.filled { background: var(--k); color: var(--on-pastel); border-color: transparent; }
-.leaf > .node.tint { border-color: color-mix(in srgb, var(--k) 55%, var(--line)); }
-.node.empty { border-style: dashed; color: var(--muted); background: transparent; }
-.node.done { padding-right: 30px; }
-.node.done::after {
-  content: "✓";
-  position: absolute; right: 7px; top: 50%; transform: translateY(-50%);
-  width: 18px; height: 18px; border-radius: 50%;
-  background: var(--done); color: var(--surface);
-  font-size: 11px; font-weight: 700; display: grid; place-items: center;
-}
-
 /* ボタン */
 .btn {
   border: 1.5px solid var(--line);
@@ -384,7 +301,7 @@ main { max-width: 760px; margin: 0 auto; }
   margin: 0 auto;
   height: var(--tabbar-h);
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 6px;
   padding-block: 8px;
 }
@@ -507,41 +424,8 @@ legend { font-size: 12px; color: var(--muted); letter-spacing: .06em; margin-bot
 .empty-state h2 { font-family: var(--font-display); margin: 0; font-size: 18px; }
 .empty-state p { margin: 0; color: var(--muted); }
 
-/* 子・孫…と自由に増やせる階層 */
-.nrow { flex: none; display: flex; align-items: stretch; }
-.nrow > .node { border-radius: 10px 0 0 10px; }
-.leaf > .nrow > .node { width: min(54vw, 210px); font-size: 13.5px; }
-.leaf > .nrow > .node.filled { background: var(--k); color: var(--on-pastel); border-color: transparent; }
-.leaf > .nrow > .node.tint { border-color: color-mix(in srgb, var(--k) 55%, var(--line)); }
-.deep > .node, .deep > .nrow > .node { font-size: 13px; padding: 5px 10px; width: min(50vw, 200px); }
-.deep > .node:not(.filled), .deep > .nrow > .node:not(.filled) { background: color-mix(in srgb, var(--k) 8%, var(--cell)); }
-.cell .subs { position: absolute; bottom: 5%; left: 6%; font-size: max(9px, 11cqi); font-weight: 700; opacity: .7; }
-.map-hint { color: var(--muted); font-size: 12.5px; margin: -6px 0 12px; }
-.struct { padding-top: 10px; border-top: 1px solid var(--line); }
-
-/* スマホ幅では縦に並ぶアウトライン型のマップにする */
-@media (max-width: 640px) {
-  .tree li { display: block; padding-left: 0; }
-  .tree ul { gap: 6px; padding-left: 22px; margin-top: 6px; }
-  .tree ul::before { display: none; }
-  .tree ul > li::before { left: -12px; top: 20px; width: 12px; }
-  .tree ul > li::after { left: -12px; top: -6px; bottom: 0; }
-  .tree ul > li:first-child::after { top: -6px; }
-  .tree ul > li:last-child::after,
-  .tree ul > li:only-child::after { display: block; bottom: auto; height: 26px; }
-  .root > .node { width: auto; max-width: 100%; }
-  .bnode { width: min(100%, 260px); }
-  .leaf > .node { width: auto; max-width: 100%; min-width: 120px; }
-  .leaf > .nrow { max-width: 100%; }
-  .leaf > .nrow > .node, .deep > .nrow > .node { width: auto; min-width: 120px; max-width: calc(100% - 30px); }
-  .deep > .node { width: auto; min-width: 100px; }
-}
 @media (min-width: 700px) {
   .scrim { align-items: center; }
-  .leaf > .node, .leaf > .nrow > .node { width: 220px; }
-  .deep > .node, .deep > .nrow > .node { width: 200px; }
-  .bnode { width: 150px; }
-  .root > .node { width: 130px; font-size: 18px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .cell { transition: none; }
@@ -586,15 +470,6 @@ legend { font-size: 12px; color: var(--muted); letter-spacing: .06em; margin-bot
     <div class="scroller"><div id="g9" class="g9"></div></div>
   </section>
 
-  <section id="vm" class="view" aria-label="マインドマップ表示" hidden>
-    <div class="map-bar">
-      <button id="emptyBtn" class="btn small" type="button" aria-pressed="false">空きマスを表示</button>
-      <button id="openAll" class="btn small" type="button">すべて開く</button>
-      <button id="closeAll" class="btn small" type="button">すべて閉じる</button>
-    </div>
-    <p class="map-hint">項目をタップして「＋ 子を追加」を押すと、行動の先にも子・孫…と好きなだけ増やせます。</p>
-    <div class="map"><ul id="tree" class="tree"></ul></div>
-  </section>
 </main>
 
 <nav class="tabbar" aria-label="表示の切り替え">
@@ -606,10 +481,6 @@ legend { font-size: 12px; color: var(--muted); letter-spacing: .06em; margin-bot
     <button class="tab" role="tab" data-view="v9" aria-selected="false" type="button">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="2.5" y="2.5" width="5.5" height="5.5"/><rect x="9.25" y="2.5" width="5.5" height="5.5"/><rect x="16" y="2.5" width="5.5" height="5.5"/><rect x="2.5" y="9.25" width="5.5" height="5.5"/><rect x="9.25" y="9.25" width="5.5" height="5.5" fill="currentColor"/><rect x="16" y="9.25" width="5.5" height="5.5"/><rect x="2.5" y="16" width="5.5" height="5.5"/><rect x="9.25" y="16" width="5.5" height="5.5"/><rect x="16" y="16" width="5.5" height="5.5"/></svg>
       9×9
-    </button>
-    <button class="tab" role="tab" data-view="vm" aria-selected="false" type="button">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="2" y="9.5" width="6" height="5" rx="1.5"/><rect x="16" y="3" width="6" height="4" rx="1.5"/><rect x="16" y="10" width="6" height="4" rx="1.5"/><rect x="16" y="17" width="6" height="4" rx="1.5"/><path d="M8 12h4M12 5v14M12 5h4M12 12h4M12 19h4"/></svg>
-      マインドマップ
     </button>
   </div>
 </nav>
@@ -628,11 +499,9 @@ legend { font-size: 12px; color: var(--muted); letter-spacing: .06em; margin-bot
       <div id="edColors" class="swatches"></div>
     </fieldset>
     <label class="toggle"><input id="edDone" type="checkbox"> 達成した</label>
-    <div class="sheet-actions struct">
-      <button id="edAddChild" class="btn small" type="button">＋ 子を追加</button>
-      <button id="edAddSib" class="btn small" type="button">＋ 同じ階層に追加</button>
-      <button id="edUp" class="btn small" type="button" aria-label="ひとつ上へ移動">↑ 上へ</button>
-      <button id="edDown" class="btn small" type="button" aria-label="ひとつ下へ移動">↓ 下へ</button>
+    <div class="sheet-actions">
+      <button id="edAddChild" class="btn small" type="button">＋ 行動を追加</button>
+      <button id="edAddSib" class="btn small" type="button">＋ 次のマスに追加</button>
       <button id="edOpen" class="btn small" type="button" hidden>この3×3を開く</button>
     </div>
     <p id="edMsg" class="msg err" role="status"></p>
@@ -640,7 +509,6 @@ legend { font-size: 12px; color: var(--muted); letter-spacing: .06em; margin-bot
       <button id="edClear" class="btn danger" type="button">消去</button>
       <span class="sp"></span>
       <button id="edCancel" class="btn" type="button">キャンセル</button>
-      <button id="edNext" class="btn" type="button" hidden>保存して続けて追加</button>
       <button id="edSave" class="btn primary" type="button">保存</button>
     </div>
   </section>
@@ -680,7 +548,7 @@ legend { font-size: 12px; color: var(--muted); letter-spacing: .06em; margin-bot
     </div>
     <p id="stState" class="note"></p>
     <div id="stConnectBox">
-      <label for="stCode" class="note">接続コード（MANDALA1: から始まる文字列）</label>
+      <label for="stCode" class="note">接続コード（MANDALA2: から始まる文字列）。1台目は許可リストの招待コード、2台目以降は1台目で表示した「端末用の接続コード」を貼ります。</label>
       <textarea id="stCode" class="code" rows="3" autocomplete="off" autocapitalize="off" spellcheck="false"></textarea>
       <div class="sheet-actions" style="margin-top:8px">
         <button id="stConnect" class="btn primary" type="button">接続する</button>
@@ -688,14 +556,15 @@ legend { font-size: 12px; color: var(--muted); letter-spacing: .06em; margin-bot
     </div>
     <div id="stConnected" class="sheet-actions">
       <button id="stSyncNow" class="btn primary" type="button">今すぐ同期</button>
-      <button id="stShowCode" class="btn" type="button">接続コードを表示</button>
+      <button id="stShowCode" class="btn" type="button">端末用の接続コードを表示</button>
       <button id="stOff" class="btn danger" type="button">接続を解除</button>
     </div>
     <textarea id="stCodeView" class="code" rows="3" readonly hidden aria-label="接続コード"></textarea>
     <p id="stMsg" class="msg" role="status"></p>
-    <p class="note">接続コードには合言葉が含まれます。人に見せたり、公開の場所に貼ったりしないでください。データはGoogleドライブの「03_アプリ作成_マインドマップ、マンダラチャート」フォルダの mandala-sync.json に保存され、1日1回バックアップされます。</p>
+    <p class="note">チャートの中身はこの端末で暗号化してから送ります。Googleドライブには暗号文だけが保存され、管理者にも読めません。そのため「端末用の接続コード」をなくすと、ほかの端末からデータを取り出せなくなります。控えを安全な場所に保管してください。人に見せたり、公開の場所に貼ったりしないでください。</p>
   </section>
 </div>
+<script src="e2esync.js"></script>
 <script>
 (function () {
   'use strict';
@@ -707,7 +576,7 @@ legend { font-size: 12px; color: var(--muted); letter-spacing: .06em; margin-bot
   var DATA_KEY = 'mandala-pwa-data-v1';
   var CONF_KEY = 'mandala-pwa-sync-v1';
   var UI_KEY = 'mandala-pwa-ui-v1';
-  var CODE_PREFIX = 'MANDALA1:';
+  var CODE_PREFIX = 'MANDALA2:';
 
   // ---------- データ ----------
   function emptyCell() { return { t: '', c: '', d: false, u: 0 }; }
@@ -724,27 +593,9 @@ legend { font-size: 12px; color: var(--muted); letter-spacing: .06em; margin-bot
     c = c && typeof c === 'object' ? c : {};
     var t = typeof c.t === 'string' ? c.t.replace(/\r/g, '') : '';
     var out = { t: Array.from(t).slice(0, MAXLEN).join(''), c: COLOR_KEYS.indexOf(c.c) >= 0 ? c.c : '', d: !!c.d, u: +c.u || 0 };
-    var k = normKids(c.k, 1);
-    if (k.length) out.k = k;
+    // 更新時刻のない古いデータでも、中身があれば同期で送れるようにする
+    if (!out.u && (out.t || out.c || out.d)) out.u = 1;
     return out;
-  }
-  // 行動マスの下に自由に増やせる子・孫…（マインドマップ用）
-  var SUBLEN = 80;
-  function normKids(arr, depth) {
-    if (!Array.isArray(arr) || depth > 30) return [];
-    return arr.filter(function (n) { return n && typeof n === 'object'; }).slice(0, 300).map(function (n) {
-      var t = typeof n.t === 'string' ? n.t.replace(/\r/g, '') : '';
-      var o = { id: typeof n.id === 'string' && n.id ? n.id : uid(), t: Array.from(t).slice(0, SUBLEN).join(''), c: COLOR_KEYS.indexOf(n.c) >= 0 ? n.c : '', d: !!n.d };
-      var k = normKids(n.k, depth + 1);
-      if (k.length) o.k = k;
-      return o;
-    });
-  }
-  function countDesc(n) { var s = 0; (n.k || []).forEach(function (x) { s += 1 + countDesc(x); }); return s; }
-  function nodeAt(ch, b, i, path) {
-    var n = ch.blocks[b][i];
-    for (var p = 0; p < path.length; p++) { n = (n.k || [])[path[p]]; if (!n) return null; }
-    return n;
   }
   function normalize(raw, id) {
     if (!raw || !Array.isArray(raw.blocks)) return null;
@@ -790,11 +641,10 @@ legend { font-size: 12px; color: var(--muted); letter-spacing: .06em; margin-bot
   var curId = null;
   var view = 'v3';
   var block = 4;
-  var showEmpty = false;
   var zoom = false;
-  var collapsed = {};
   var undoStack = [];
-  var sync = { busy: false, again: false, timer: null, last: 0, state: 'off', err: '' };
+  var sync = { busy: false, again: false, timer: null, last: 0, rev: 0, state: 'off', err: '' };
+  var oldConf = false; // 暗号化前の接続設定が残っている
 
   function lsGet(k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } }
   function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }
@@ -806,20 +656,21 @@ legend { font-size: 12px; color: var(--muted); letter-spacing: .06em; margin-bot
       deleted = d.deleted || {};
       (d.dirty || []).forEach(function (id) { dirty[id] = true; });
       sync.last = +d.last || 0;
+      sync.rev = +d.rev || 0;
     }
     conf = lsGet(CONF_KEY);
+    if (conf && !conf.e) { conf = null; oldConf = true; sync.rev = 0; }
     var u = lsGet(UI_KEY) || {};
-    if (u.view) view = u.view;
+    if (u.view === 'v3' || u.view === 'v9') view = u.view;
     if (typeof u.block === 'number') block = u.block;
-    showEmpty = !!u.showEmpty;
     zoom = !!u.zoom;
     if (u.curId) curId = u.curId;
   }
   function saveData() {
-    var ok = lsSet(DATA_KEY, { charts: Object.keys(charts).map(function (k) { return charts[k]; }), deleted: deleted, dirty: Object.keys(dirty), last: sync.last });
+    var ok = lsSet(DATA_KEY, { charts: Object.keys(charts).map(function (k) { return charts[k]; }), deleted: deleted, dirty: Object.keys(dirty), last: sync.last, rev: sync.rev });
     if (!ok) setStatus('この端末に保存できませんでした。JSONで書き出して保管してください。', true);
   }
-  function saveUI() { lsSet(UI_KEY, { view: view, block: block, showEmpty: showEmpty, zoom: zoom, curId: curId }); }
+  function saveUI() { lsSet(UI_KEY, { view: view, block: block, zoom: zoom, curId: curId }); }
 
   function cur() { return curId ? charts[curId] : null; }
   function sortedIds() { return Object.keys(charts).sort(function (a, b) { return charts[b].updated - charts[a].updated; }); }
@@ -836,12 +687,13 @@ legend { font-size: 12px; color: var(--muted); letter-spacing: .06em; margin-bot
     var b = $('#syncBtn');
     b.dataset.state = sync.state;
     var pending = Object.keys(dirty).length;
-    if (!conf) { setStatus('同期は未設定です（この端末だけに保存）。右上の雲マークから設定できます。'); return; }
+    if (!conf) { setStatus(oldConf ? '同期のしくみが新しくなりました（暗号化）。右上の雲マークから新しい接続コードを貼ってください。' : '同期は未設定です（この端末だけに保存）。右上の雲マークから設定できます。', oldConf); return; }
     if (sync.state === 'busy') { setStatus('同期中…'); return; }
     if (sync.state === 'error') {
-      setStatus(sync.err === 'bad_token'
-        ? '接続コードが正しくありません。同期の設定を確認してください。'
-        : 'オフラインです。変更はこの端末に保存済みで、つながると自動で同期します。' + (pending ? '（未送信 ' + pending + '件）' : ''), sync.err === 'bad_token');
+      var hard = sync.err !== 'network';
+      setStatus(hard
+        ? E2ESync.message(sync.err)
+        : 'オフラインです。変更はこの端末に保存済みで、つながると自動で同期します。' + (pending ? '（未送信 ' + pending + '件）' : ''), hard);
       return;
     }
     setStatus(pending ? '変更を送信待ち…' : (sync.last ? '同期済み ' + hm(sync.last) + '（スマホ・PC共通）' : '同期の準備中…'));
@@ -853,6 +705,17 @@ legend { font-size: 12px; color: var(--muted); letter-spacing: .06em; margin-bot
     clearTimeout(sync.timer);
     sync.timer = setTimeout(runSync, ms);
   }
+  // チャート1つを、暗号化して送る記録に分ける（見出し c:<id> と、書いたことのあるマス c:<id>:<b><i>）
+  function toRecords(id) {
+    var ch = charts[id];
+    if (!ch) return deleted[id] ? [{ id: 'c:' + id, u: deleted[id], data: { del: deleted[id] } }] : [];
+    var out = [{ id: 'c:' + id, u: ch.updated, data: { created: ch.created, updated: ch.updated } }];
+    for (var b = 0; b < 9; b++) for (var i = 0; i < 9; i++) {
+      var c = ch.blocks[b][i];
+      if (c.u) out.push({ id: 'c:' + id + ':' + b + i, u: c.u, data: { t: c.t, c: c.c, d: c.d } });
+    }
+    return out;
+  }
   function runSync() {
     if (!conf) return Promise.resolve();
     if (sync.busy) { sync.again = true; return Promise.resolve(); }
@@ -860,13 +723,13 @@ legend { font-size: 12px; color: var(--muted); letter-spacing: .06em; margin-bot
     sync.state = 'busy';
     showSyncState();
     var sendIds = Object.keys(dirty);
-    var payload = { token: conf.k, charts: sendIds.map(function (id) { return charts[id]; }).filter(Boolean), deleted: deleted };
-    sendIds.forEach(function (id) { delete dirty[id]; });
-    return fetch(conf.u, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload), redirect: 'follow' })
-      .then(function (r) { return r.json(); })
-      .then(function (j) {
-        if (!j || !j.ok) { var e = new Error((j && j.error) || 'server'); e.code = (j && j.error) || 'server'; throw e; }
-        applyServer(j);
+    var recs = [];
+    sendIds.forEach(function (id) { recs = recs.concat(toRecords(id)); delete dirty[id]; });
+    return E2ESync.exchange(conf, sync.rev, recs)
+      .then(function (res) {
+        var full = applyServer(res.recs);
+        sync.rev = full ? 0 : res.rev;
+        if (full) sync.again = true;
         sync.state = 'ok';
         sync.err = '';
         sync.last = Date.now();
@@ -884,25 +747,40 @@ legend { font-size: 12px; color: var(--muted); letter-spacing: .06em; margin-bot
         if (sync.again) { sync.again = false; scheduleSync(300); }
       });
   }
-  function applyServer(j) {
-    var sc = j.charts || {};
-    Object.keys(sc).forEach(function (id) {
-      var s = normalize(sc[id], id);
-      if (!s) return;
-      var mine = charts[id];
-      var merged = mergeChart(mine, s);
-      charts[id] = merged;
-      if (mine && !sameChart(merged, s)) dirty[id] = true; // 手元の方が新しいマスがある
+  // サーバーから届いた記録を、マス単位で新しい方を採って取り込む。手元にないチャートが途中から届いたときは true（全件を取り直す）
+  function applyServer(recs) {
+    var metas = {}, cells = [], full = false;
+    recs.forEach(function (r) {
+      var m = /^c:([^:]+)(?::(\d)(\d))?$/.exec(r.id);
+      if (!m) return;
+      if (m[2] === undefined) metas[m[1]] = r;
+      else cells.push([m[1], +m[2], +m[3], r]);
     });
-    var sd = j.deleted || {};
-    Object.keys(sd).forEach(function (id) { if (!deleted[id] || deleted[id] < sd[id]) deleted[id] = sd[id]; });
-    Object.keys(deleted).forEach(function (id) {
-      if (charts[id] && charts[id].updated <= deleted[id]) { delete charts[id]; delete dirty[id]; }
+    Object.keys(metas).forEach(function (id) {
+      var d = metas[id].data || {};
+      if (d.del) {
+        if (!deleted[id] || deleted[id] < d.del) deleted[id] = d.del;
+        if (charts[id] && charts[id].updated <= d.del) { delete charts[id]; delete dirty[id]; }
+        return;
+      }
+      var up = +d.updated || 0, ch = charts[id];
+      if (ch) { ch.updated = Math.max(ch.updated, up); ch.created = Math.min(ch.created, +d.created || ch.created); return; }
+      if (deleted[id] && deleted[id] >= up) return;
+      if (deleted[id]) delete deleted[id];
+      charts[id] = { id: id, blocks: blank(), created: +d.created || up, updated: up };
+      if (sync.rev) full = true;
     });
-    // サーバーにない手元のチャートは送る
-    Object.keys(charts).forEach(function (id) { if (!sc[id]) dirty[id] = true; });
+    cells.forEach(function (x) {
+      var ch = charts[x[0]], r = x[3];
+      if (!ch || x[1] > 8 || x[2] > 8) return;
+      if (r.u > (ch.blocks[x[1]][x[2]].u || 0)) {
+        var d = r.data || {};
+        ch.blocks[x[1]][x[2]] = normCell({ t: d.t, c: d.c, d: d.d, u: r.u });
+      }
+    });
     ensureCur();
     if (Object.keys(dirty).length) sync.again = true;
+    return full;
   }
 
   function markChanged(id) {
@@ -930,14 +808,14 @@ legend { font-size: 12px; color: var(--muted); letter-spacing: .06em; margin-bot
     if (u.snap === null) { // 追加したチャートの取り消し
       delete charts[u.id];
       deleted[u.id] = now;
-      delete dirty[u.id];
+      dirty[u.id] = true; // 削除を他の端末へ伝える
       if (curId === u.id) { curId = null; ensureCur(); }
     } else {
       var curr = charts[u.id];
       var snap = u.snap;
       for (var b = 0; b < 9; b++) for (var i = 0; i < 9; i++) {
         var s = snap.blocks[b][i], c = curr ? curr.blocks[b][i] : null;
-        if (!c || s.t !== c.t || s.c !== c.c || s.d !== c.d || JSON.stringify(s.k || []) !== JSON.stringify(c.k || [])) s.u = now;
+        if (!c || s.t !== c.t || s.c !== c.c || s.d !== c.d) s.u = now;
       }
       snap.updated = now;
       charts[u.id] = snap;
@@ -1003,15 +881,7 @@ legend { font-size: 12px; color: var(--muted); letter-spacing: .06em; margin-bot
       p.setAttribute('aria-hidden', 'true');
       el.appendChild(p);
     }
-    var nd = countDesc(cell);
-    if (nd) {
-      var sb = document.createElement('span');
-      sb.className = 'subs';
-      sb.textContent = '▸' + nd;
-      sb.setAttribute('aria-hidden', 'true');
-      el.appendChild(sb);
-    }
-    el.setAttribute('aria-label', (cell.t || '空きマス') + (cell.d ? '（達成）' : '') + (nd ? '（下位 ' + nd + ' 件）' : ''));
+    el.setAttribute('aria-label', (cell.t || '空きマス') + (cell.d ? '（達成）' : ''));
     return el;
   }
 
@@ -1021,13 +891,12 @@ legend { font-size: 12px; color: var(--muted); letter-spacing: .06em; margin-bot
     $('#undoBtn').disabled = !undoStack.length;
     $('#emptyState').hidden = !!ch;
     $('#emptySync').hidden = !!conf;
-    ['v3', 'v9', 'vm'].forEach(function (v) { $('#' + v).hidden = !ch || v !== view; });
+    ['v3', 'v9'].forEach(function (v) { $('#' + v).hidden = !ch || v !== view; });
     document.querySelectorAll('.tab').forEach(function (t) { t.setAttribute('aria-selected', String(t.dataset.view === view)); });
     if (!$('#csWrap').hidden) renderList();
     if (!ch) return;
     if (view === 'v3') render3(ch);
-    else if (view === 'v9') render9(ch);
-    else renderMap(ch);
+    else render9(ch);
   }
 
   function render3(ch) {
@@ -1119,97 +988,6 @@ legend { font-size: 12px; color: var(--muted); letter-spacing: .06em; margin-bot
     }
   }
 
-  function nodeBtn(cell, b, i, cls, path) {
-    var el = document.createElement('button');
-    el.type = 'button';
-    el.className = 'node';
-    if (cls) el.classList.add(cls);
-    if (cell.c) { el.classList.add('filled'); el.style.setProperty('--k', 'var(--p-' + cell.c + ')'); }
-    if (cell.d) el.classList.add('done');
-    if (cell.t) el.textContent = cell.t;
-    else { el.classList.add('empty'); el.textContent = '＋ 空き'; }
-    el.addEventListener('click', function () { openEditor(b, i, path || []); });
-    return el;
-  }
-
-  // 行動マスとその下の子・孫…を再帰的に描く
-  function buildSub(li, node, b, i, path, cls, key) {
-    var btn = nodeBtn(node, b, i, cls, path);
-    var kids = node.k || [];
-    if (!kids.length) { li.appendChild(btn); return; }
-    var row = document.createElement('div');
-    row.className = 'nrow';
-    row.appendChild(btn);
-    var isC = !!collapsed[key];
-    var fold = document.createElement('button');
-    fold.type = 'button';
-    fold.className = 'fold';
-    fold.setAttribute('aria-expanded', String(!isC));
-    fold.setAttribute('aria-label', (node.t || '項目') + 'を' + (isC ? '開く' : '閉じる'));
-    fold.innerHTML = (isC ? '▸' : '▾') + '<span class="ct"></span>';
-    fold.querySelector('.ct').textContent = countDesc(node);
-    fold.addEventListener('click', function () { collapsed[key] = !collapsed[key]; render(); });
-    row.appendChild(fold);
-    li.appendChild(row);
-    if (isC) return;
-    var ul = document.createElement('ul');
-    kids.forEach(function (kid, idx) {
-      var l = document.createElement('li');
-      l.className = 'leaf deep';
-      buildSub(l, kid, b, i, path.concat(idx), kid.c ? '' : 'tint', kid.id);
-      ul.appendChild(l);
-    });
-    li.appendChild(ul);
-  }
-
-  function renderMap(ch) {
-    $('#emptyBtn').setAttribute('aria-pressed', String(showEmpty));
-    var tree = $('#tree');
-    tree.textContent = '';
-    var root = document.createElement('li');
-    root.className = 'root';
-    root.appendChild(nodeBtn(ch.blocks[4][4], 4, 4));
-    var kids = document.createElement('ul');
-    ORDER.forEach(function (b) {
-      var th = ch.blocks[4][b];
-      var items = ORDER.map(function (i) { return [i, ch.blocks[b][i]]; });
-      var filled = items.filter(function (x) { return x[1].t || (x[1].k && x[1].k.length); });
-      if (!showEmpty && !th.t && !filled.length) return;
-      var li = document.createElement('li');
-      li.className = 'branch';
-      var k = th.c || 'n';
-      li.style.setProperty('--k', 'var(--p-' + k + ')');
-      var wrap = document.createElement('div');
-      wrap.className = 'bnode';
-      wrap.appendChild(nodeBtn(th, 4, b));
-      var fold = document.createElement('button');
-      fold.type = 'button';
-      fold.className = 'fold';
-      var isC = !!collapsed[b];
-      fold.setAttribute('aria-expanded', String(!isC));
-      fold.setAttribute('aria-label', (th.t || 'テーマ') + 'を' + (isC ? '開く' : '閉じる'));
-      fold.innerHTML = (isC ? '▸' : '▾') + '<span class="ct"></span>';
-      fold.querySelector('.ct').textContent = filled.length;
-      fold.addEventListener('click', function () { collapsed[b] = !collapsed[b]; render(); });
-      wrap.appendChild(fold);
-      li.appendChild(wrap);
-      if (!isC) {
-        var ul = document.createElement('ul');
-        (showEmpty ? items : filled).forEach(function (x) {
-          var l = document.createElement('li');
-          l.className = 'leaf';
-          l.style.setProperty('--k', 'var(--p-' + k + ')');
-          buildSub(l, x[1], b, x[0], [], x[1].c ? '' : 'tint', 'c' + b + '-' + x[0]);
-          ul.appendChild(l);
-        });
-        if (ul.children.length) li.appendChild(ul);
-      }
-      kids.appendChild(li);
-    });
-    if (kids.children.length) root.appendChild(kids);
-    tree.appendChild(root);
-  }
-
   function goBlock(b) {
     block = b;
     view = 'v3';
@@ -1230,37 +1008,21 @@ legend { font-size: 12px; color: var(--muted); letter-spacing: .06em; margin-bot
     var th = ch.blocks[4][b].t.replace(/\n/g, ' ') || 'テーマ未設定';
     return th + ' の行動 ' + (ORDER.indexOf(i) + 1) + ' / 8';
   }
-  function label(n) { return (n && n.t ? n.t : '（空き）').replace(/\n/g, ' '); }
-  function trailText(ch, b, i, path) {
-    var names = [label(ch.blocks[4][b]), label(ch.blocks[b][i])];
-    for (var p = 1; p <= path.length; p++) names.push(label(nodeAt(ch, b, i, path.slice(0, p))));
-    return names.join(' › ');
-  }
-  // mode: 'edit'（既存を直す）/ 'new'（path の項目の下に新しく追加）
-  function openEditor(b, i, path, mode) {
+  function openEditor(b, i) {
     var ch = cur();
     if (!ch) return;
-    path = path || [];
-    mode = mode || 'edit';
-    var isNew = mode === 'new';
-    var node = isNew ? { t: '', c: '', d: false } : nodeAt(ch, b, i, path);
-    if (!node) return;
-    var deep = isNew || path.length > 0;
-    ed = { b: b, i: i, path: path, mode: mode, id: curId, limit: deep ? SUBLEN : MAXLEN };
-    $('#edText').maxLength = ed.limit;
-    $('#edTitle').textContent = isNew ? '項目を追加' : deep ? '項目を編集' : (b === 4 && i === 4) ? '目標を編集' : (b === 4 ? 'テーマを編集' : 'マスを編集');
-    $('#edWhere').textContent = isNew ? trailText(ch, b, i, path) + ' の下' : deep ? trailText(ch, b, i, path.slice(0, -1)) + ' の下' : whereText(b, i);
+    var node = ch.blocks[b][i];
+    ed = { b: b, i: i, id: curId };
+    var isTheme = b === 4 && i !== 4, isRoot = b === 4 && i === 4;
+    $('#edTitle').textContent = isRoot ? '目標を編集' : (isTheme ? 'テーマを編集' : 'マスを編集');
+    $('#edWhere').textContent = whereText(b, i);
     $('#edText').value = node.t;
     $('#edDone').checked = node.d;
     edColor = node.c;
-    var isTheme = b === 4 && i !== 4, isRoot = b === 4 && i === 4;
     $('#edOpen').hidden = !isTheme;
-    $('#edAddChild').hidden = isNew;
-    $('#edAddChild').textContent = isRoot ? '＋ テーマを追加' : isTheme ? '＋ 行動を追加' : '＋ 子を追加';
-    $('#edAddSib').hidden = isNew || isRoot;
-    $('#edUp').hidden = $('#edDown').hidden = isNew || path.length === 0;
-    $('#edNext').hidden = !isNew;
-    $('#edClear').hidden = isNew;
+    $('#edAddChild').hidden = !(isRoot || isTheme);
+    $('#edAddChild').textContent = isRoot ? '＋ テーマを追加' : '＋ 行動を追加';
+    $('#edAddSib').hidden = isRoot;
     $('#edMsg').textContent = '';
     disarmClear();
     paintColors();
@@ -1284,7 +1046,7 @@ legend { font-size: 12px; color: var(--muted); letter-spacing: .06em; margin-bot
     });
   }
   function updateCount() {
-    var lim = ed ? ed.limit : MAXLEN;
+    var lim = MAXLEN;
     var n = Array.from($('#edText').value).length;
     var el = $('#edCount');
     el.textContent = n + ' / ' + lim;
@@ -1292,82 +1054,45 @@ legend { font-size: 12px; color: var(--muted); letter-spacing: .06em; margin-bot
   }
   function readFields() {
     return {
-      t: Array.from($('#edText').value.replace(/\r/g, '').replace(/^\s+|\s+$/g, '')).slice(0, ed.limit).join(''),
+      t: Array.from($('#edText').value.replace(/\r/g, '').replace(/^\s+|\s+$/g, '')).slice(0, MAXLEN).join(''),
       d: $('#edDone').checked,
       c: edColor
     };
   }
-  function saveEditor(next) {
+  function saveEditor() {
     if (!ed) return;
     var e = ed, f = readFields();
     closeEditor();
     var ch = charts[e.id];
     if (!ch) return;
-    if (e.mode === 'new') {
-      if (!f.t) return;
-      var parent = nodeAt(ch, e.b, e.i, e.path);
-      if (!parent) return;
-      collapsed[e.path.length ? parent.id : 'c' + e.b + '-' + e.i] = false;
-      commit(e.id, function (ch) {
-        var p = nodeAt(ch, e.b, e.i, e.path);
-        p.k = p.k || [];
-        p.k.push({ id: uid(), t: f.t, c: f.c, d: f.d });
-        ch.blocks[e.b][e.i].u = Date.now();
-      });
-      if (next === true) openEditor(e.b, e.i, e.path, 'new');
-      return;
-    }
-    var old = nodeAt(ch, e.b, e.i, e.path);
-    if (!old || (old.t === f.t && old.d === f.d && old.c === f.c)) return;
+    var old = ch.blocks[e.b][e.i];
+    if (old.t === f.t && old.d === f.d && old.c === f.c) return;
     commit(e.id, function (ch) {
-      var n = nodeAt(ch, e.b, e.i, e.path);
-      n.t = f.t; n.c = f.c; n.d = f.d;
-      ch.blocks[e.b][e.i].u = Date.now();
+      var n = ch.blocks[e.b][e.i];
+      n.t = f.t; n.c = f.c; n.d = f.d; n.u = Date.now();
     });
   }
   function emptySlot(ch, blk) {
     for (var n = 0; n < 8; n++) {
-      var j = ORDER[n], c = ch.blocks[blk][j];
-      if (!c.t && !(c.k && c.k.length)) return j;
+      var j = ORDER[n];
+      if (!ch.blocks[blk][j].t) return j;
     }
     return -1;
   }
-  // 目標・テーマの下はマンダラの8マスを順に埋め、行動より下は自由に増やす
+  // 目標の下はテーマ、テーマの下は行動の8マスを順に埋める
   function addUnder(e, sibling) {
     var ch = cur();
-    if (sibling && e.path.length) { saveEditor(); openEditor(e.b, e.i, e.path.slice(0, -1), 'new'); return; }
-    var target = null; // マンダラのマスを埋める先のブロック
-    if (!sibling) {
-      if (e.b === 4 && e.i === 4) target = 4;
-      else if (e.b === 4) target = e.i;
-    } else {
-      target = e.b === 4 ? 4 : e.b;
-    }
-    if (target === null) { saveEditor(); openEditor(e.b, e.i, e.path, 'new'); return; }
+    var target = sibling ? e.b : (e.b === 4 && e.i === 4 ? 4 : e.i);
     var s = emptySlot(ch, target);
-    if (s < 0) { $('#edMsg').textContent = (target === 4 ? 'テーマ' : '行動') + 'の8マスはすべて埋まっています。行動の下なら、子・孫…と自由に増やせます。'; return; }
+    if (s < 0) { $('#edMsg').textContent = (target === 4 ? 'テーマ' : '行動') + 'の8マスはすべて埋まっています。'; return; }
     saveEditor();
     openEditor(target, s);
-  }
-  function moveNode(dir) {
-    var e = ed;
-    saveEditor();
-    var ch = charts[e.id];
-    var parent = nodeAt(ch, e.b, e.i, e.path.slice(0, -1));
-    var idx = e.path[e.path.length - 1], j = idx + dir;
-    if (!parent || !parent.k || j < 0 || j >= parent.k.length) { openEditor(e.b, e.i, e.path); return; }
-    commit(e.id, function (ch) {
-      var p = nodeAt(ch, e.b, e.i, e.path.slice(0, -1));
-      var t = p.k[idx]; p.k[idx] = p.k[j]; p.k[j] = t;
-      ch.blocks[e.b][e.i].u = Date.now();
-    });
-    openEditor(e.b, e.i, e.path.slice(0, -1).concat(j));
   }
   function disarmClear() {
     clearArmed = false;
     clearTimeout(clearTimer);
     var b = $('#edClear');
-    b.textContent = ed && ed.path && ed.path.length ? '削除' : '消去';
+    b.textContent = '消去';
     b.classList.remove('armed');
   }
 
@@ -1417,8 +1142,8 @@ legend { font-size: 12px; color: var(--muted); letter-spacing: .06em; margin-bot
         delArmed = null;
         undoStack.push({ id: id, snap: clone(charts[id]) });
         delete charts[id];
-        delete dirty[id];
         deleted[id] = Date.now();
+        dirty[id] = true; // 削除を他の端末へ伝える
         if (curId === id) { curId = null; ensureCur(); }
         saveData();
         saveUI();
@@ -1450,20 +1175,14 @@ legend { font-size: 12px; color: var(--muted); letter-spacing: .06em; margin-bot
   function outline(ch) {
     var out = [];
     var mark = function (c) { return c.d ? ' ✓' : ''; };
-    var subOutline = function (arr, lv) {
-      (arr || []).forEach(function (n) {
-        out.push(new Array(lv + 2).join('  ') + '- ' + n.t.replace(/\n/g, ' ') + mark(n));
-        subOutline(n.k, lv + 1);
-      });
-    };
     out.push('◎ ' + ch.blocks[4][4].t.replace(/\n/g, ' ') + mark(ch.blocks[4][4]));
     ORDER.forEach(function (b, n) {
       var th = ch.blocks[4][b];
-      var items = ORDER.filter(function (i) { return ch.blocks[b][i].t || (ch.blocks[b][i].k && ch.blocks[b][i].k.length); });
+      var items = ORDER.filter(function (i) { return ch.blocks[b][i].t; });
       if (!th.t && !items.length) return;
       out.push('');
       out.push((n + 1) + '. ' + (th.t.replace(/\n/g, ' ') || '（テーマ未設定）') + mark(th));
-      items.forEach(function (i) { out.push('  ・' + ch.blocks[b][i].t.replace(/\n/g, ' ') + mark(ch.blocks[b][i])); subOutline(ch.blocks[b][i].k, 2); });
+      items.forEach(function (i) { out.push('  ・' + ch.blocks[b][i].t.replace(/\n/g, ' ') + mark(ch.blocks[b][i])); });
     });
     return out.join('\n');
   }
@@ -1520,20 +1239,10 @@ legend { font-size: 12px; color: var(--muted); letter-spacing: .06em; margin-bot
   }
 
   // ---------- 同期の設定 ----------
-  function encodeCode(c) { return CODE_PREFIX + btoa(unescape(encodeURIComponent(JSON.stringify({ u: c.u, k: c.k })))); }
-  function decodeCode(s) {
-    s = (s || '').trim().replace(/\s+/g, '');
-    if (s.indexOf(CODE_PREFIX) !== 0) return null;
-    try {
-      var o = JSON.parse(decodeURIComponent(escape(atob(s.slice(CODE_PREFIX.length)))));
-      if (o && /^https:\/\/script\.google(usercontent)?\.com\//.test(o.u) && o.k) return { u: o.u, k: o.k };
-    } catch (e) { /* 読めない */ }
-    return null;
-  }
   function stMsg(t, err) { var m = $('#stMsg'); m.textContent = t; m.className = 'msg' + (err ? ' err' : ''); }
   function renderSettings() {
     $('#stState').textContent = conf
-      ? '接続済み：この端末の変更はGoogleドライブに保存され、スマホとPCで共有されます。' + (sync.last ? '最終同期 ' + fmtDate(sync.last) : '')
+      ? '接続済み：この端末の変更は暗号化してGoogleドライブに保存され、スマホとPCで共有されます。' + (sync.last ? '最終同期 ' + fmtDate(sync.last) : '')
       : '未接続：いまはこの端末の中だけに保存しています。接続コードを貼り付けると、Googleドライブ経由でスマホとPCが同じ内容になります。';
     $('#stConnectBox').hidden = !!conf;
     $('#stConnected').hidden = !conf;
@@ -1578,62 +1287,48 @@ legend { font-size: 12px; color: var(--muted); letter-spacing: .06em; margin-bot
   });
 
   $('#edSave').addEventListener('click', function () { saveEditor(); });
-  $('#edNext').addEventListener('click', function () { saveEditor(true); });
   $('#edAddChild').addEventListener('click', function () { addUnder(ed, false); });
   $('#edAddSib').addEventListener('click', function () { addUnder(ed, true); });
-  $('#edUp').addEventListener('click', function () { moveNode(-1); });
-  $('#edDown').addEventListener('click', function () { moveNode(1); });
   $('#edCancel').addEventListener('click', closeEditor);
   $('#edWrap').addEventListener('click', function (e) { if (e.target === $('#edWrap')) closeEditor(); });
   $('#edText').addEventListener('input', updateCount);
-  $('#edText').addEventListener('keydown', function (e) { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); saveEditor(!!ed && ed.mode === 'new'); } });
+  $('#edText').addEventListener('keydown', function (e) { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); saveEditor(); } });
   $('#edOpen').addEventListener('click', function () { var i = ed.i; saveEditor(); goBlock(i); });
   $('#edClear').addEventListener('click', function () {
     if (!clearArmed) {
       clearArmed = true;
       var b = $('#edClear');
-      var tgt = nodeAt(cur(), ed.b, ed.i, ed.path);
-      var verb = ed.path.length ? '削除' : '消去';
-      b.textContent = (tgt && tgt.k && tgt.k.length) ? 'もう一度で下の階層ごと' + verb : 'もう一度で' + verb;
+      b.textContent = 'もう一度で消去';
       b.classList.add('armed');
       clearTimer = setTimeout(disarmClear, 4000);
       return;
     }
     var e = ed;
     closeEditor();
-    if (e.path.length) {
-      commit(e.id, function (ch) {
-        var p = nodeAt(ch, e.b, e.i, e.path.slice(0, -1));
-        p.k.splice(e.path[e.path.length - 1], 1);
-        if (!p.k.length) delete p.k;
-        ch.blocks[e.b][e.i].u = Date.now();
-      });
-    } else {
-      commit(e.id, function (ch) { ch.blocks[e.b][e.i] = { t: '', c: '', d: false, u: Date.now() }; });
-    }
+    commit(e.id, function (ch) { ch.blocks[e.b][e.i] = { t: '', c: '', d: false, u: Date.now() }; });
   });
 
   $('#stClose').addEventListener('click', closeSettings);
   $('#stWrap').addEventListener('click', function (e) { if (e.target === $('#stWrap')) closeSettings(); });
   $('#stConnect').addEventListener('click', function () {
-    var c = decodeCode($('#stCode').value);
-    if (!c) { stMsg('接続コードを読み取れませんでした。「MANDALA1:」から始まる文字列をすべて貼り付けてください。', true); return; }
+    if (!E2ESync.decodeCode(CODE_PREFIX, $('#stCode').value)) { stMsg(E2ESync.message('bad_code'), true); return; }
     stMsg('接続を確認しています…');
-    var prev = conf;
-    conf = c;
-    Object.keys(charts).forEach(function (id) { dirty[id] = true; });
-    runSync().then(function () {
-      if (sync.state === 'ok') {
-        lsSet(CONF_KEY, conf);
-        $('#stCode').value = '';
+    $('#stConnect').disabled = true;
+    E2ESync.connect(CODE_PREFIX, $('#stCode').value).then(function (c) {
+      conf = c;
+      oldConf = false;
+      lsSet(CONF_KEY, conf);
+      sync.rev = 0;
+      Object.keys(charts).forEach(function (id) { dirty[id] = true; });
+      Object.keys(deleted).forEach(function (id) { dirty[id] = true; });
+      $('#stCode').value = '';
+      return runSync().then(function () {
         renderSettings();
-        stMsg('接続しました。Googleドライブのデータと同期しました。');
-      } else {
-        conf = prev;
-        stMsg(sync.err === 'bad_token' ? '合言葉が一致しませんでした。新しい接続コードを確認してください。' : '同期先につながりませんでした。インターネット接続と接続コードを確認してください。', true);
-        showSyncState();
-      }
-    });
+        stMsg(sync.state === 'ok' ? '接続しました。2台目以降の端末には「端末用の接続コードを表示」で出るコードを貼ってください。' : E2ESync.message(sync.err), sync.state !== 'ok');
+      });
+    }, function (e) {
+      stMsg(E2ESync.message(e && e.code), true);
+    }).then(function () { $('#stConnect').disabled = false; });
   });
   $('#stSyncNow').addEventListener('click', function () {
     stMsg('同期しています…');
@@ -1645,12 +1340,12 @@ legend { font-size: 12px; color: var(--muted); letter-spacing: .06em; margin-bot
   });
   $('#stShowCode').addEventListener('click', function () {
     var box = $('#stCodeView');
-    box.value = encodeCode(conf);
+    box.value = E2ESync.encodeCode(CODE_PREFIX, conf);
     box.hidden = false;
     box.focus();
     box.select();
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(box.value).then(function () { stMsg('接続コードをコピーしました。もう一方の端末の「同期の設定」に貼り付けてください。'); }, function () { stMsg('表示されたコードを選択してコピーしてください。'); });
+      navigator.clipboard.writeText(box.value).then(function () { stMsg('端末用の接続コード（鍵入り）をコピーしました。もう一方の端末の「同期の設定」に貼り付けてください。控えも残しておいてください。'); }, function () { stMsg('表示されたコードを選択してコピーしてください。'); });
     }
   });
   $('#stOff').addEventListener('click', function () {
@@ -1663,6 +1358,8 @@ legend { font-size: 12px; color: var(--muted); letter-spacing: .06em; margin-bot
     conf = null;
     try { localStorage.removeItem(CONF_KEY); } catch (e) { /* 無視 */ }
     sync.state = 'off';
+    sync.rev = 0;
+    saveData();
     renderSettings();
     showSyncState();
     render();
@@ -1677,9 +1374,6 @@ legend { font-size: 12px; color: var(--muted); letter-spacing: .06em; margin-bot
   });
 
   $('#zoomBtn').addEventListener('click', function () { zoom = !zoom; saveUI(); render(); });
-  $('#emptyBtn').addEventListener('click', function () { showEmpty = !showEmpty; saveUI(); render(); });
-  $('#openAll').addEventListener('click', function () { collapsed = {}; render(); });
-  $('#closeAll').addEventListener('click', function () { ORDER.forEach(function (b) { collapsed[b] = true; }); render(); });
   $('#emptyNew').addEventListener('click', function () { var ch = newChart(); addChart(ch); openEditor(4, 4); });
   $('#emptySync').addEventListener('click', openSettings);
 
